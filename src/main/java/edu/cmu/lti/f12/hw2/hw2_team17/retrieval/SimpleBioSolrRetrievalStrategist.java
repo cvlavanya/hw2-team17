@@ -7,7 +7,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import edu.cmu.lti.oaqa.framework.data.RetrievalResult;
-import edu.cmu.lti.oaqa.openqa.hello..hello.retrieval.SimpleSolrRetrievalStrategist;
+import edu.cmu.lti.oaqa.openqa.hello.retrieval.SimpleSolrRetrievalStrategist;
 
 public class SimpleBioSolrRetrievalStrategist extends SimpleSolrRetrievalStrategist {
 

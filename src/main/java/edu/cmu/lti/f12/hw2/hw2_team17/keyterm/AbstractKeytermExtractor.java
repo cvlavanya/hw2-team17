@@ -51,3 +51,4 @@ public void initialize(UimaContext c)
 protected final void log(String message) {
 super.log(QALogEntry.KEYTERM, message);
 } }
+

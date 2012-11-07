@@ -1,5 +1,5 @@
 class: edu.cmu.lti.f12.hw2.hw2_team17.keyterm.YksunKeytermExtractor
-ModelFile: src/main/resources/models/ne-en-bio-genetag.HmmChunker
+ModelFile: src/main/resources/lingpipeModel/ne-en-bio-genetag.HmmChunker
 MAX_N_BEST_CHUNKS: 100
 Threshold: !!str 0.62
 # ok... needs to figure out how to pass double params... This is a workaround

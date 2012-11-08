@@ -25,7 +25,7 @@ import edu.cmu.lti.oaqa.framework.data.Keyterm;
 
 /**
  * 
- * @author Zi Yang <ziy@cs.cmu.edu>
+ * @author Lavanya
  * 
  */
 public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {

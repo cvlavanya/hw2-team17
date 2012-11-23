@@ -55,31 +55,17 @@ public class YksunKeytermExtractor extends AbstractKeytermExtractor {
 
   @Override
   protected List<Keyterm> getKeyterms(String input) {
-    char[] cs = input.toCharArray();
+    char[] cs = input.replace('?', ' ').replace('(', ' ').replace(')', ' ').replace('[', ' ')
+            .replace(']', ' ').replace('/', ' ').replace('\'', ' ').toCharArray();
     List<Keyterm> result = new ArrayList<Keyterm>();
     Iterator<Chunk> iter = chunker.nBestChunks(cs, 0, cs.length, maxN);
     while (iter.hasNext()) {
       Chunk chunk = iter.next();
       double conf = Math.pow(2.0, chunk.score());
       String gene = input.substring(chunk.start(), chunk.end());
-      if (conf > threshold && gene.length() > 1 && isComplete(gene))
+      if (conf > threshold && gene.length() > 1)
         result.add(new Keyterm(gene));
     }
     return result;
   }
-
-  /**
-   * Determine if the input text is a complete gene mention
-   * 
-   * @param text
-   *          String that will be processed in this method.
-   * @return the boolean that indicates the true/false value.
-   */
-  private boolean isComplete(String text) {
-    int left = text.indexOf("(");
-    int right = text.indexOf(")");
-
-    return (left != -1 && right > left) || (left == -1 && right == -1);
-  }
-
 }

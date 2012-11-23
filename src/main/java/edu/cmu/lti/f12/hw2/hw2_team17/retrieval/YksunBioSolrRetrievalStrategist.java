@@ -1,5 +1,12 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.retrieval;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,10 +58,58 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     StringBuffer result = new StringBuffer();
     for (Keyterm keyterm : keyterms) {
       result.append(keyterm.getText() + " ");
+      for (String e : geneSynonymGenerator(keyterm.getText())) {
+        if (!e.equals(keyterm.getText()))
+          result.append(e + " ");
+      }
     }
     String query = result.toString();
     System.out.println(" QUERY: " + query);
     return query;
+  }
+
+  private List<String> geneSynonymGenerator(String text) {
+    List<String> results = new ArrayList<String>();
+    try {
+      // Send the request
+      URL url = new URL("http://gpsdb.expasy.org/cgi-bin/gpsdb/show");
+      URLConnection conn = url.openConnection();
+      conn.setDoOutput(true);
+      OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
+
+      // write parameters
+      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=prefered");
+      writer.flush();
+
+      // Get the response
+      StringBuffer answer = new StringBuffer();
+      BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+      String line;
+      while ((line = reader.readLine()) != null) {
+        answer.append(line);
+      }
+      writer.close();
+      reader.close();
+
+      // Output the response
+      String curStr = answer.toString();
+      int start = 0;
+      int end = 0;
+      while (start != -1 && end != -1) {
+        start = curStr.indexOf("<td class=\"name\">", end + 3) + 17;
+        if (start == 16)
+          break;
+        end = curStr.indexOf("</td>", start);
+        if (!results.contains(curStr.substring(start, end)))
+          results.add(curStr.substring(start, end));
+      }
+      
+    } catch (MalformedURLException ex) {
+      ex.printStackTrace();
+    } catch (IOException ex) {
+      ex.printStackTrace();
+    }
+    return results;
   }
 
   private List<RetrievalResult> retrieveDocuments(String query) {

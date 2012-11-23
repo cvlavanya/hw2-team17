@@ -66,6 +66,18 @@
 			<artifactId>lingpipe</artifactId>
 			<version>4.1.0</version>
 		</dependency>
+		<dependency>
+			<groupId>
+				edu.washington.cs.knowitall.stanford-corenlp
+			</groupId>
+			<artifactId>stanford-postag-models</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>1.3.3</version>
+		</dependency>
 	</dependencies>
 	<scm>
 		<url>scm:git:git://github.com/cvlavanya/hw2-team17.git</url>

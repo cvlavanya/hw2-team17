@@ -78,7 +78,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
       OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
       // write parameters
-      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=prefered");
+      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=gene");
       writer.flush();
 
       // Get the response

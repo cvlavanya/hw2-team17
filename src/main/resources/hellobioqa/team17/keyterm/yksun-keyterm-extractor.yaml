@@ -1,8 +1,7 @@
 class: edu.cmu.lti.f12.hw2.hw2_team17.keyterm.YksunKeytermExtractor
-ModelFile: src/main/resources/lingpipeModel/ne-en-bio-genetag.HmmChunker
-MAX_N_BEST_CHUNKS: 100
-Threshold: !!str 0.62
-# ok... needs to figure out how to pass double params... This is a workaround
+hit-list-size: 10
+server: http://peace.isri.cs.cmu.edu:9080/solr/genomics-simple/
+port: 9080
 
 persistence-provider: |
   inherit: ecd.default-log-persistence-provider

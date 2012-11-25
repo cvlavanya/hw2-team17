@@ -54,6 +54,8 @@ public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {
 		File modelFile = new File(fileName);
 		Chunker chunker = (Chunker) AbstractExternalizable.readObject(modelFile);
 		//Get lines from the input document to feed to LingPipe
+		
+		
 		 
 		
 		String termsInSentence[] = question.trim().split("\\s+"); // Regex for one or more spaces
@@ -99,7 +101,8 @@ public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {
 				
 				
 				String geneTagString=resultSentence.substring(limits[0],limits[1]);
-			    keyterms.add(new Keyterm(geneTagString));				
+			    keyterms.add(new Keyterm(geneTagString));	
+			    
 				
 			}	
 				

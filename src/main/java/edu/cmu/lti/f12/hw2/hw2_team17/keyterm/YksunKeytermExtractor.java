@@ -18,6 +18,8 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 public class YksunKeytermExtractor extends AbstractKeytermExtractor {
   private StanfordCoreNLP pipeline;
+  private List<String> whiteList;
+  private List<String> blackList;
 
   @Override
   public void initialize(UimaContext c) throws ResourceInitializationException {
@@ -25,6 +27,10 @@ public class YksunKeytermExtractor extends AbstractKeytermExtractor {
     Properties props = new Properties();
     props.put("annotators", "tokenize, ssplit, pos");
     pipeline = new StanfordCoreNLP(props);
+    whiteList = new ArrayList<String>();
+    blackList = new ArrayList<String>();
+    addToWhiteList();
+    addToBlackList();
   }
 
   @Override
@@ -37,7 +43,7 @@ public class YksunKeytermExtractor extends AbstractKeytermExtractor {
       String word = token.get(TextAnnotation.class);
       String pos = token.get(PartOfSpeechAnnotation.class);
       if ((pos.startsWith("POS") || pos.startsWith("NN") || pos.startsWith("JJ"))
-              && !inBlackList(word)) {
+              && !blackList.contains(word)) {
         if (builder.length() > 0 && !pos.startsWith("POS"))
           builder.append(" ");
         builder.append(word);
@@ -45,7 +51,7 @@ public class YksunKeytermExtractor extends AbstractKeytermExtractor {
         result.add(new Keyterm(builder.toString()));
         builder = new StringBuilder();
       }
-      if (inWhiteList(word))
+      if (whiteList.contains(word))
         result.add(new Keyterm(word));
     }
     if (builder.length() > 0)
@@ -53,11 +59,17 @@ public class YksunKeytermExtractor extends AbstractKeytermExtractor {
     return result;
   }
 
-  private boolean inBlackList(String word) {
-    return word.equals("role") || word.equals("activity");
+  private final void addToBlackList() {
+    blackList.add("role");
+    blackList.add("activity");
   }
 
-  private boolean inWhiteList(String word) {
-    return word.equals("affect") || word.equals("regulate");
+  private final void addToWhiteList() {
+    whiteList.add("affect");
+    whiteList.add("regulate");
+    whiteList.add("interact");
+    whiteList.add("contribute");
+    whiteList.add("migrate");
+    whiteList.add("impact");
   }
 }

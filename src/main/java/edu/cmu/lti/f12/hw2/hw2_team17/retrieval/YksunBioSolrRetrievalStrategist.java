@@ -1,6 +1,7 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.retrieval;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -8,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.solr.common.SolrDocument;
@@ -15,6 +17,10 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.resource.ResourceInitializationException;
+
+import com.aliasi.chunk.Chunk;
+import com.aliasi.chunk.ConfidenceChunker;
+import com.aliasi.util.AbstractExternalizable;
 
 import edu.cmu.lti.oaqa.core.provider.solr.SolrWrapper;
 import edu.cmu.lti.oaqa.cse.basephase.retrieval.AbstractRetrievalStrategist;
@@ -24,12 +30,18 @@ import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 
 public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist {
+  /**
+   * Name of configuration parameter that must be set to the path of the model file.
+   */
+  public static final String PARAM_MODELFILE = "ModelFile";
 
   protected Integer hitListSize;
 
   protected SolrWrapper wrapper;
 
   protected WordNetDatabase wordnetDB;
+
+  protected ConfidenceChunker chunker;
 
   @Override
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -49,8 +61,18 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     } catch (Exception e) {
       throw new ResourceInitializationException(e);
     }
+    
     System.setProperty("wordnet.database.dir", "src/main/resources/wordnet/");
     wordnetDB = WordNetDatabase.getFileInstance();
+
+    try {
+      String modelPath = (String) aContext.getConfigParameterValue(PARAM_MODELFILE);
+      chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
+    } catch (IOException e) {
+      throw new ResourceInitializationException();
+    } catch (ClassNotFoundException e) {
+      throw new ResourceInitializationException();
+    }
   }
 
   @Override
@@ -83,17 +105,22 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
             }
           }
 
+    System.out.println("=================");
+    
     for (Keyterm k : expandKeyTerms)
       for (String e : k.getText().split(" "))
-        for (String newE : geneSynonymGenerator(e)) {
-          if (!e.toLowerCase().equals(newE.toLowerCase()))
-            for (int i = 0; i < strList.size(); i++) {
-              String newQuery = strList.get(i).toString().replace(e, newE);
-              if (!strList.contains(newQuery)) {
-                strList.add(newQuery);
-                System.out.println(" QUERY: " + newQuery);
+        if (isGene(e)) {
+          for (String newE : geneSynonymGenerator(e)) {
+            int size = strList.size();
+            if (!e.toLowerCase().equals(newE.toLowerCase()))
+              for (int i = 0; i < size; i++) {
+                String newQuery = strList.get(i).toString().replace(e, newE);
+                if (!strList.contains(newQuery)) {
+                  strList.add(newQuery);
+                  System.out.println(" QUERY: " + newQuery);
+                }
               }
-            }
+          }
         }
     return strList;
   }
@@ -116,6 +143,12 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
   // return false;
   // }
 
+  private boolean isGene(String e) {
+    char[] cs = e.toCharArray();
+    Iterator<Chunk> iter = chunker.nBestChunks(cs, 0, cs.length, 1);
+    return Math.pow(2.0, iter.next().score()) > 0.62;
+  }
+
   private List<String> geneSynonymGenerator(String text) {
     List<String> results = new ArrayList<String>();
     try {
@@ -126,7 +159,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
       OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
       // write parameters
-      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=prefered");
+      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=gene");
       writer.flush();
 
       // Get the response

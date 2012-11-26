@@ -27,6 +27,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/KOBE/Desktop/jaws-bin.jar"/>
+	<classpathentry kind="lib" path="src/main/resources/lib/jaws-bin.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

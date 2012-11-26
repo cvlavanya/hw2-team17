@@ -64,7 +64,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     List<String> strList = new ArrayList<String>();
     StringBuilder sb = new StringBuilder();
     for (Keyterm k : expandKeyTerms) {
-      sb.append("\"" + k + "\" ");
+        sb.append("\"" + k + "\" ");
     }
     sb.deleteCharAt(sb.length() - 1);
     strList.add(sb.toString());

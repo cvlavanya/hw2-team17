@@ -1,4 +1,4 @@
-class: edu.cmu.lti.f12.hw2.hw2_team17.keyterm.YksunKeytermExtractor
+class: edu.cmu.lti.f12.hw2.hw2_team17.keyterm.Team17KeytermExtractor
 
 persistence-provider: |
   inherit: ecd.default-log-persistence-provider

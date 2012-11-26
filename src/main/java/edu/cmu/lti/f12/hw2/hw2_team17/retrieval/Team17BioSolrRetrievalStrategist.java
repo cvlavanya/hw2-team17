@@ -29,7 +29,7 @@ import edu.cmu.lti.oaqa.framework.data.RetrievalResult;
 import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 
-public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist {
+public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategist {
   /**
    * Name of configuration parameter that must be set to the path of the model file.
    */

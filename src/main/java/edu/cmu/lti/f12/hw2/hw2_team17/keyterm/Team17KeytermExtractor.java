@@ -16,7 +16,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-public class YksunKeytermExtractor extends AbstractKeytermExtractor {
+public class Team17KeytermExtractor extends AbstractKeytermExtractor {
   private StanfordCoreNLP pipeline;
   private List<String> whiteList;
   private List<String> blackList;

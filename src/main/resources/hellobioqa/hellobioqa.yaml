@@ -17,7 +17,7 @@ pipeline:
       #- inherit: helloqa.keyterm.simple
       #- inherit: hellobioqa.team17.keyterm.lavanya-keyterm-extractor      
       #- inherit: hellobioqa.team17.keyterm.zhenxiang-keyterm-extractor
-      - inherit: hellobioqa.team17.keyterm.yksun-keyterm-extractor
+      - inherit: hellobioqa.team17.keyterm.team17-keyterm-extractor
       
 
   - inherit: jdbc.sqlite.cse.phase 
@@ -25,7 +25,7 @@ pipeline:
     options: |
       #- inherit: hellobioqa.retrieval.simple-solr-strategist
       #- inherit: hellobioqa.team17.retrieval.lavanya-solr-strategist
-      - inherit: hellobioqa.team17.retrieval.yksun-solr-strategist     
+      - inherit: hellobioqa.team17.retrieval.team17-solr-strategist     
           
   - inherit: jdbc.sqlite.cse.phase  
     name: passage-extractor

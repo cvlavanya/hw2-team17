@@ -49,7 +49,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     } catch (Exception e) {
       throw new ResourceInitializationException(e);
     }
-    System.setProperty("wordnet.database.dir", "src/main/resources/wordnetDict/");
+    System.setProperty("wordnet.database.dir", "src/main/resources/wordnet/");
     wordnetDB = WordNetDatabase.getFileInstance();
   }
 
@@ -64,9 +64,10 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     List<String> strList = new ArrayList<String>();
     StringBuilder sb = new StringBuilder();
     for (Keyterm k : expandKeyTerms) {
-        sb.append("\"" + k + "\" ");
+      sb.append("\"" + k + "\" ");
     }
     sb.deleteCharAt(sb.length() - 1);
+    System.out.println(" QUERY: " + sb.toString());
     strList.add(sb.toString());
 
     for (Keyterm k : expandKeyTerms)
@@ -75,22 +76,25 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
           for (String wordForm : synset.getWordForms()) {
             if (!e.toLowerCase().equals(wordForm.toLowerCase())) {
               String newQuery = sb.toString().replace(e, wordForm);
-              if (!strList.contains(newQuery))
+              if (!strList.contains(newQuery)) {
                 strList.add(newQuery);
+                System.out.println(" QUERY: " + newQuery);
+              }
             }
           }
 
-    int size = strList.size();
     for (Keyterm k : expandKeyTerms)
       for (String e : k.getText().split(" "))
         for (String newE : geneSynonymGenerator(e)) {
           if (!e.toLowerCase().equals(newE.toLowerCase()))
-            for (int i = 0; i < size; i++)
-              strList.add(strList.get(i).toString().replace(e, newE));
+            for (int i = 0; i < strList.size(); i++) {
+              String newQuery = strList.get(i).toString().replace(e, newE);
+              if (!strList.contains(newQuery)) {
+                strList.add(newQuery);
+                System.out.println(" QUERY: " + newQuery);
+              }
+            }
         }
-
-    for (String e : strList)
-      System.out.println(" QUERY: " + e);
     return strList;
   }
 
@@ -166,7 +170,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
                   (Float) doc.getFieldValue("score"), query);
           if (!resultContains(result, r))
             result.add(r);
-          System.out.println(doc.getFieldValue("id"));
+          // System.out.println(doc.getFieldValue("id"));
         }
       }
     } catch (Exception e) {

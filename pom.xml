@@ -82,4 +82,9 @@
 		</dependency>
 		
 	</dependencies>
+	<scm>
+		<url>scm:git:git://github.com/cvlavanya/hw2-team17.git</url>
+		<connection>scm:git:git@github.com:cvlavanya/hw2-team17.git</connection>
+		<developerConnection>scm:git:git@github.com:cvlavanya/hw2-team17.git</developerConnection>
+	</scm>
 </project>

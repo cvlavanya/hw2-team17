@@ -1,85 +1,75 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.keyterm;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import com.aliasi.chunk.Chunk;
-import com.aliasi.chunk.ConfidenceChunker;
-import com.aliasi.util.AbstractExternalizable;
-
 import edu.cmu.lti.oaqa.cse.basephase.keyterm.AbstractKeytermExtractor;
 import edu.cmu.lti.oaqa.framework.data.Keyterm;
+import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 public class YksunKeytermExtractor extends AbstractKeytermExtractor {
-  /**
-   * Name of configuration parameter that must be set to the path of the model file.
-   */
-  public static final String PARAM_MODELFILE = "ModelFile";
-
-  /**
-   * Name of configuration parameter that must be set to the Maximum N Best Chunks.
-   */
-  public static final String PARAM_MAXN = "MAX_N_BEST_CHUNKS";
-
-  /**
-   * Name of configuration parameter that must be set to the Confidence Acceptance Level.
-   */
-  public static final String PARAM_THRESHOLD = "Threshold";
-
-  private ConfidenceChunker chunker;
-
-  private int maxN;
-
-  private Double threshold;
+  private StanfordCoreNLP pipeline;
+  private List<String> whiteList;
+  private List<String> blackList;
 
   @Override
   public void initialize(UimaContext c) throws ResourceInitializationException {
     super.initialize(c);
-    try {
-      String modelPath = (String) c.getConfigParameterValue(PARAM_MODELFILE);
-      maxN = (Integer) c.getConfigParameterValue(PARAM_MAXN);
-      threshold = Double.parseDouble((String) c.getConfigParameterValue(PARAM_THRESHOLD));
-      chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
-    } catch (IOException e) {
-      throw new ResourceInitializationException();
-    } catch (ClassNotFoundException e) {
-      throw new ResourceInitializationException();
-    }
+    Properties props = new Properties();
+    props.put("annotators", "tokenize, ssplit, pos");
+    pipeline = new StanfordCoreNLP(props);
+    whiteList = new ArrayList<String>();
+    blackList = new ArrayList<String>();
+    addToWhiteList();
+    addToBlackList();
   }
 
   @Override
   protected List<Keyterm> getKeyterms(String input) {
-    char[] cs = input.toCharArray();
     List<Keyterm> result = new ArrayList<Keyterm>();
-    Iterator<Chunk> iter = chunker.nBestChunks(cs, 0, cs.length, maxN);
-    while (iter.hasNext()) {
-      Chunk chunk = iter.next();
-      double conf = Math.pow(2.0, chunk.score());
-      String gene = input.substring(chunk.start(), chunk.end());
-      if (conf > threshold && gene.length() > 1 && isComplete(gene))
-        result.add(new Keyterm(gene));
+    Annotation document = new Annotation(input);
+    pipeline.annotate(document);
+    StringBuilder builder = new StringBuilder();
+    for (CoreLabel token : document.get(TokensAnnotation.class)) {
+      String word = token.get(TextAnnotation.class);
+      String pos = token.get(PartOfSpeechAnnotation.class);
+      if ((pos.startsWith("POS") || pos.startsWith("NN") || pos.startsWith("JJ"))
+              && !blackList.contains(word)) {
+        if (builder.length() > 0 && !pos.startsWith("POS"))
+          builder.append(" ");
+        builder.append(word);
+      } else if (builder.length() > 0) {
+        result.add(new Keyterm(builder.toString()));
+        builder = new StringBuilder();
+      }
+      if (whiteList.contains(word))
+        result.add(new Keyterm(word));
     }
+    if (builder.length() > 0)
+      result.add(new Keyterm(builder.toString()));
     return result;
   }
 
-  /**
-   * Determine if the input text is a complete gene mention
-   * 
-   * @param text
-   *          String that will be processed in this method.
-   * @return the boolean that indicates the true/false value.
-   */
-  private boolean isComplete(String text) {
-    int left = text.indexOf("(");
-    int right = text.indexOf(")");
-
-    return (left != -1 && right > left) || (left == -1 && right == -1);
+  private final void addToBlackList() {
+    blackList.add("role");
+    blackList.add("activity");
   }
 
+  private final void addToWhiteList() {
+    whiteList.add("affect");
+    whiteList.add("regulate");
+    whiteList.add("interact");
+    whiteList.add("contribute");
+    whiteList.add("migrate");
+    whiteList.add("impact");
+  }
 }

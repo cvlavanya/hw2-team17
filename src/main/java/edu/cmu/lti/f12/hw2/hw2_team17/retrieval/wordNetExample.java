@@ -60,7 +60,7 @@ public class wordNetExample
 			    for (String str : strSet) {
 			        sb.append(str+",");
 			    }
-			    System.out.println("\nOutput:"+sb.toString());
+			    System.out.println(sb.toString());
 			}
 			else
 			{

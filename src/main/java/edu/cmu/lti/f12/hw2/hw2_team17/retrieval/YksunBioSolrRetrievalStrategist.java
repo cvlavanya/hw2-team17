@@ -1,6 +1,7 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.retrieval;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -8,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.solr.common.SolrDocument;
@@ -16,16 +18,30 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import com.aliasi.chunk.Chunk;
+import com.aliasi.chunk.ConfidenceChunker;
+import com.aliasi.util.AbstractExternalizable;
+
 import edu.cmu.lti.oaqa.core.provider.solr.SolrWrapper;
 import edu.cmu.lti.oaqa.cse.basephase.retrieval.AbstractRetrievalStrategist;
 import edu.cmu.lti.oaqa.framework.data.Keyterm;
 import edu.cmu.lti.oaqa.framework.data.RetrievalResult;
+import edu.smu.tspell.wordnet.Synset;
+import edu.smu.tspell.wordnet.WordNetDatabase;
 
 public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist {
+  /**
+   * Name of configuration parameter that must be set to the path of the model file.
+   */
+  public static final String PARAM_MODELFILE = "ModelFile";
 
   protected Integer hitListSize;
 
   protected SolrWrapper wrapper;
+
+  protected WordNetDatabase wordnetDB;
+
+  protected ConfidenceChunker chunker;
 
   @Override
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -45,27 +61,92 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     } catch (Exception e) {
       throw new ResourceInitializationException(e);
     }
+    
+    System.setProperty("wordnet.database.dir", "src/main/resources/wordnet/");
+    wordnetDB = WordNetDatabase.getFileInstance();
+
+    try {
+      String modelPath = (String) aContext.getConfigParameterValue(PARAM_MODELFILE);
+      chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
+    } catch (IOException e) {
+      throw new ResourceInitializationException();
+    } catch (ClassNotFoundException e) {
+      throw new ResourceInitializationException();
+    }
   }
 
   @Override
   protected final List<RetrievalResult> retrieveDocuments(String questionText,
           List<Keyterm> keyterms) {
-    String query = formulateQuery(keyterms);
-    return retrieveDocuments(query);
+    List<String> queries = formulateQuery(keyterms);
+    return retrieveDocuments(queries);
   };
 
-  protected String formulateQuery(List<Keyterm> keyterms) {
-    StringBuffer result = new StringBuffer();
-    for (Keyterm keyterm : keyterms) {
-      result.append(keyterm.getText() + " ");
-      for (String e : geneSynonymGenerator(keyterm.getText())) {
-        if (!e.equals(keyterm.getText()))
-          result.append(e + " ");
-      }
+  private List<String> formulateQuery(List<Keyterm> expandKeyTerms) {
+    List<String> strList = new ArrayList<String>();
+    StringBuilder sb = new StringBuilder();
+    for (Keyterm k : expandKeyTerms) {
+      sb.append("\"" + k + "\" ");
     }
-    String query = result.toString();
-    System.out.println(" QUERY: " + query);
-    return query;
+    sb.deleteCharAt(sb.length() - 1);
+    System.out.println(" QUERY: " + sb.toString());
+    strList.add(sb.toString());
+
+    for (Keyterm k : expandKeyTerms)
+      for (String e : k.getText().split(" "))
+        for (Synset synset : wordnetDB.getSynsets(e))
+          for (String wordForm : synset.getWordForms()) {
+            if (!e.toLowerCase().equals(wordForm.toLowerCase())) {
+              String newQuery = sb.toString().replace(e, wordForm);
+              if (!strList.contains(newQuery)) {
+                strList.add(newQuery);
+                System.out.println(" QUERY: " + newQuery);
+              }
+            }
+          }
+
+    System.out.println("=================");
+    
+    for (Keyterm k : expandKeyTerms)
+      for (String e : k.getText().split(" "))
+        if (isGene(e)) {
+          for (String newE : geneSynonymGenerator(e)) {
+            int size = strList.size();
+            if (!e.toLowerCase().equals(newE.toLowerCase()))
+              for (int i = 0; i < size; i++) {
+                String newQuery = strList.get(i).toString().replace(e, newE);
+                if (!strList.contains(newQuery)) {
+                  strList.add(newQuery);
+                  System.out.println(" QUERY: " + newQuery);
+                }
+              }
+          }
+        }
+    return strList;
+  }
+
+  // protected List<Keyterm> expandKeyTerms(List<Keyterm> keyterms) {
+  // int size = keyterms.size();
+  // for (int i = 0; i < size; i++) {
+  // for (String e : geneSynonymGenerator(keyterms.get(i).getText())) {
+  // if (!listContains(keyterms, e))
+  // keyterms.add(new Keyterm(e));
+  // }
+  // }
+  // return keyterms;
+  // }
+
+  // private boolean listContains(List<Keyterm> strList, String target) {
+  // for (Keyterm v : strList)
+  // if (v.getText().toLowerCase().equals(target.toLowerCase()))
+  // return true;
+  // return false;
+  // }
+
+  private boolean isGene(String e) {
+    char[] cs = e.toCharArray();
+    Iterator<Chunk> iter = chunker.nBestChunks(cs, 0, cs.length, 1);
+    return Math.pow(2.0, iter.next().score()) > 0.62;
   }
 
   private List<String> geneSynonymGenerator(String text) {
@@ -78,7 +159,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
       OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
       // write parameters
-      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=prefered");
+      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=gene");
       writer.flush();
 
       // Get the response
@@ -103,7 +184,7 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
         if (!results.contains(curStr.substring(start, end)))
           results.add(curStr.substring(start, end));
       }
-      
+
     } catch (MalformedURLException ex) {
       ex.printStackTrace();
     } catch (IOException ex) {
@@ -112,20 +193,30 @@ public class YksunBioSolrRetrievalStrategist extends AbstractRetrievalStrategist
     return results;
   }
 
-  private List<RetrievalResult> retrieveDocuments(String query) {
+  private List<RetrievalResult> retrieveDocuments(List<String> queries) {
     List<RetrievalResult> result = new ArrayList<RetrievalResult>();
     try {
-      SolrDocumentList docs = wrapper.runQuery(query, hitListSize);
-      for (SolrDocument doc : docs) {
-        RetrievalResult r = new RetrievalResult((String) doc.getFieldValue("id"),
-                (Float) doc.getFieldValue("score"), query);
-        result.add(r);
-        System.out.println(doc.getFieldValue("id"));
+      for (String query : queries) {
+        SolrDocumentList docs = wrapper.runQuery(query, hitListSize);
+        for (SolrDocument doc : docs) {
+          RetrievalResult r = new RetrievalResult((String) doc.getFieldValue("id"),
+                  (Float) doc.getFieldValue("score"), query);
+          if (!resultContains(result, r))
+            result.add(r);
+          // System.out.println(doc.getFieldValue("id"));
+        }
       }
     } catch (Exception e) {
       System.err.println("Error retrieving documents from Solr: " + e);
     }
     return result;
+  }
+
+  private boolean resultContains(List<RetrievalResult> result, RetrievalResult r) {
+    for (RetrievalResult e : result)
+      if (e.getDocID().equals(r.getDocID()))
+        return true;
+    return false;
   }
 
   @Override

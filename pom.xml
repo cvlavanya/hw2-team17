@@ -80,7 +80,12 @@
 			<artifactId>stanford-corenlp</artifactId>
 			<version>1.3.3</version>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>team17.wordnet</groupId>
+			<artifactId>wordnet</artifactId>
+			<version>0.0.2</version>
+		</dependency>
 	</dependencies>
 	<scm>
 		<url>scm:git:git://github.com/cvlavanya/hw2-team17.git</url>

@@ -35,6 +35,11 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
    */
   public static final String PARAM_MODELFILE = "ModelFile";
 
+  /**
+   * Name of configuration parameter that must be set to the path of the dict file.
+   */
+  public static final String PARAM_DICTPATH = "WordNetDict";
+
   protected Integer hitListSize;
 
   protected SolrWrapper wrapper;
@@ -61,8 +66,9 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
     } catch (Exception e) {
       throw new ResourceInitializationException(e);
     }
-    
-    System.setProperty("wordnet.database.dir", "src/main/resources/wordnet/");
+
+    System.setProperty("wordnet.database.dir",
+            (String) aContext.getConfigParameterValue(PARAM_DICTPATH));
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {
@@ -106,7 +112,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
           }
 
     System.out.println("=================");
-    
+
     for (Keyterm k : expandKeyTerms)
       for (String e : k.getText().split(" "))
         if (isGene(e)) {
@@ -159,7 +165,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
       OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream());
 
       // write parameters
-      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=gene");
+      writer.write("name=" + text + "&species=&taxo=0&source=HGNC&type=prefered");
       writer.flush();
 
       // Get the response
@@ -203,7 +209,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
                   (Float) doc.getFieldValue("score"), query);
           if (!resultContains(result, r))
             result.add(r);
-          // System.out.println(doc.getFieldValue("id"));
+          System.out.println(doc.getFieldValue("id"));
         }
       }
     } catch (Exception e) {

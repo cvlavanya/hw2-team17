@@ -89,6 +89,7 @@ class getStemmedQueryClass {
        
 			
         String stemmedString = strbuff.toString();
+        analyzer.close();
         return stemmedString;
              
     }

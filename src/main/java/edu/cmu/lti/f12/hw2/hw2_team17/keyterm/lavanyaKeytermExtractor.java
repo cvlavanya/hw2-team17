@@ -54,6 +54,8 @@ public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {
 		File modelFile = new File(fileName);
 		Chunker chunker = (Chunker) AbstractExternalizable.readObject(modelFile);
 		//Get lines from the input document to feed to LingPipe
+		
+		
 		 
 		
 		String termsInSentence[] = question.trim().split("\\s+"); // Regex for one or more spaces
@@ -62,7 +64,7 @@ public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {
 		for(int j=1;j<termsInSentence.length;j++){
 			allButSentenceId.append(termsInSentence[j]).append(" ");// Attach words followed by single space
 			
-				
+		}		
 				
 			String resultSentence = allButSentenceId.toString(); // Convert stringbuffer back to string
 			//System.out.println(resultSentence);
@@ -99,11 +101,33 @@ public class lavanyaKeytermExtractor extends AbstractKeytermExtractor {
 				
 				
 				String geneTagString=resultSentence.substring(limits[0],limits[1]);
-			    keyterms.add(new Keyterm(geneTagString));				
+			    keyterms.add(new Keyterm(geneTagString));	
+			    
+			    
+			    String str=question.trim();
+			    if(str.toLowerCase().contains("mutations"))
+			    	keyterms.add(new Keyterm("mutations"));
+			    if(str.toLowerCase().contains("affect"))
+			    	keyterms.add(new Keyterm("affect"));
+			    if(str.toLowerCase().contains("interactions"))
+			    	keyterms.add(new Keyterm("interactions"));
+			    if(str.toLowerCase().contains("interact"))
+			    	keyterms.add(new Keyterm("interact"));
+			    if(str.toLowerCase().contains("regulate"))
+			    	keyterms.add(new Keyterm("regulate"));
+			    if(str.toLowerCase().contains("contribute"))
+			    	keyterms.add(new Keyterm("contribute"));
+			    if(str.toLowerCase().contains("migrate"))
+			    	keyterms.add(new Keyterm("migrate"));
+			    if(str.toLowerCase().contains("impact"))
+			    	keyterms.add(new Keyterm("impact"));
+			    
+			    
+			    
 				
 			}	
 				
-		}
+		
 
 	}
 	catch(Exception e)

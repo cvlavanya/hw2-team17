@@ -100,7 +100,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
 
     for (Keyterm k : expandKeyTerms)
       for (String e : k.getText().split(" "))
-        for (Synset synset : wordnetDB.getSynsets(e))
+        for (Synset synset : wordnetDB.getSynsets(e)) {
           for (String wordForm : synset.getWordForms()) {
             if (!e.toLowerCase().equals(wordForm.toLowerCase())) {
               String newQuery = sb.toString().replace(e, wordForm);
@@ -110,6 +110,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
               }
             }
           }
+        }
 
     System.out.println("=================");
 
@@ -202,7 +203,21 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
   private List<RetrievalResult> retrieveDocuments(List<String> queries) {
     List<RetrievalResult> result = new ArrayList<RetrievalResult>();
     try {
-      for (String query : queries) {
+      StringBuilder sb = new StringBuilder("(\"" + queries.get(0));
+      List<String> combinedQueries = new ArrayList<String>();
+      for (int i = 1; i < queries.size(); i++) {
+        sb.append("\" OR \"" + queries.get(i));
+        if (sb.length() > 4096) {
+          sb.append("\")");
+          combinedQueries.add(sb.toString());
+          sb = new StringBuilder("(\"" + queries.get(i));
+        }
+      }
+      sb.append("\")");
+      combinedQueries.add(sb.toString());
+      System.out.println(combinedQueries.size() + " queries");
+
+      for (String query : combinedQueries) {
         SolrDocumentList docs = wrapper.runQuery(query, hitListSize);
         for (SolrDocument doc : docs) {
           RetrievalResult r = new RetrievalResult((String) doc.getFieldValue("id"),

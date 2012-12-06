@@ -224,7 +224,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
                   (Float) doc.getFieldValue("score"), query);
           if (!resultContains(result, r))
             result.add(r);
-          System.out.println(doc.getFieldValue("id"));
+          //System.out.println(doc.getFieldValue("id"));
         }
       }
     } catch (Exception e) {

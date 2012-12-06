@@ -70,9 +70,8 @@ public class ZhenxiangPassageCandidateFinder {
     List<List<PassageSpan>> matchingSpans = new ArrayList<List<PassageSpan>>();
     List<PassageSpan> matchedSpans = new ArrayList<PassageSpan>();
     
-    Integer[] keytermNum = new Integer[keyterms.length];
-    for (int i=0; i<keyterms.length; i++)
-      keytermNum[i] = 0;
+    double totalWeight = 0;
+    double totalKeyWeight = 0;
     
     
     // Find all keyterm matches.
@@ -87,7 +86,7 @@ public class ZhenxiangPassageCandidateFinder {
         PassageSpan match = new PassageSpan( m.start() , m.end() ) ;
         matchedSpans.add( match );
         totalMatches++;
-        keytermNum[i] ++;
+        totalWeight += weight[i];
         
       }
      /* for (String key:expand){
@@ -102,6 +101,7 @@ public class ZhenxiangPassageCandidateFinder {
       if (! matchedSpans.isEmpty() ) {
         //matchingSpans.add( matchedSpans );
         totalKeyterms++;
+        totalKeyWeight += weight[i];
       }
       matchingSpans.add( matchedSpans );
       i++;
@@ -134,6 +134,13 @@ public class ZhenxiangPassageCandidateFinder {
         // This code runs for each window.
         int keytermsFound = 0;
         int matchesFound = 0;
+        //double keytermWeightFound = 0;
+        //double weightFound = 0;
+        //System.out.println("===========");
+        //System.out.println(text.substring(begin,end));
+        //begin = leftExpand(begin,text);
+        //end = rightExpand(end,text);
+        //System.out.println(text.substring(begin,end));
         
         int []passageKeyNum = new int [keyterms.length];
         for (int j=0; j<passageKeyNum.length; j++)
@@ -145,13 +152,20 @@ public class ZhenxiangPassageCandidateFinder {
             if ( keytermMatch.containedIn( begin , end ) ){
               passageKeyNum[j]++;
               matchesFound++;
+             // weightFound += weight[j];
               thisKeytermFound = true;
             }
           }
-          if ( thisKeytermFound ) keytermsFound++;
+          if ( thisKeytermFound ){
+            keytermsFound++;
+            //keytermWeightFound += weight[j];
+          }
           j++;
         }
         double score = scorer.scoreWindow( begin , end , matchesFound , totalMatches , keytermsFound , totalKeyterms , textSize );
+        System.out.println("----------------");
+        System.out.println(docId + " " + begin + " " + end + " " + score);
+        //double score = getScore( begin , end , weightFound , totalWeight , keytermWeightFound , totalKeyWeight , textSize );
         /*System.out.println("!-------------------------------");
         System.out.println(text.substring(begin,end) + " " + score);
         System.out.println("!-------------------------------");*/
@@ -170,6 +184,12 @@ public class ZhenxiangPassageCandidateFinder {
     return result;
 
   }
+  private double getScore ( int begin , int end , double weightFound , double totalWeight , double keytermWeightFound , double totalKeyWeight , int textSize ){
+    int windowSize = end - begin;
+    double offsetScore = ( (double)textSize - (double)begin ) / (double)textSize;
+    return ( .25d * (double)weightFound / (double)totalWeight ) + .25d * ( (double)keytermWeightFound / (double)totalKeyWeight) + .25d * ( 1 - ( (double)windowSize / (double)textSize ) + .25d * offsetScore );
+  }
+  
   private class PassageCandidateComparator implements Comparator {
     // Ranks by score, decreasing.
     public int compare( Object o1 , Object o2 ) {
@@ -197,5 +217,73 @@ public class ZhenxiangPassageCandidateFinder {
         return false;
       }
     }
+  }
+  private int leftExpand(int pos, String text){
+    /*int left = pos -1 ;
+    while (left >= 0 && text.charAt(left) != '>')
+      left --;
+    if (left < 0)
+      return 0;
+    else
+      return left + 1;*/
+    int left;
+    int right;
+    int tagLength;
+    int totalLength;
+    double tagRate;
+    
+    tagRate = 0.0;
+    left = pos + 1;
+    while (tagRate < 0.5){
+      pos = left-1;
+      right = pos;
+      while (right >= 0 && text.charAt(right) != '>')
+        right--;
+      if (right < 0)
+        break;
+      left = right - 1;
+      while (left >= 0 && text.charAt(left) != '<')
+        left--;
+      if (left < 0)
+        break;
+      totalLength = pos - left;
+      tagLength = right - left + 1;
+      tagRate = (double)tagLength / totalLength;
+      //System.out.println("left "+ totalLength + " " + tagLength + " " + tagRate);
+      //System.out.println("ss " + text.substring(left,pos));
+    }
+    return pos;
+  }
+  private int rightExpand(int pos, String text){
+    /*int right = pos + 1;
+    while (right < text.length() && text.charAt(right) != '<')
+      right++;
+    if (right >= text.length())
+      return text.length()-1;
+    else 
+      return right - 1;*/
+    int left;
+    int right;
+    int tagLength;
+    int totalLength;
+    double tagRate;
+    
+    tagRate = 0.0;
+    right = pos-1;
+    while (tagRate < 0.5){
+      pos = right+1;
+      left = text.indexOf("<",pos);
+      if (left == -1)
+        break;
+      right = text.indexOf(">",left);
+      if (right == -1)
+        break;
+      totalLength = right - pos;
+      tagLength = right - left + 1;
+      tagRate = (double)tagLength / totalLength;   
+      //System.out.println("right "+ totalLength + " " + tagLength + " " + tagRate);
+      //System.out.println("ss " + text.substring(pos,right+1));
+    }
+    return pos;
   }
 }

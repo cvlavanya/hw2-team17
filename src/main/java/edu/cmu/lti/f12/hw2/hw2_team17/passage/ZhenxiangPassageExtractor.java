@@ -2,6 +2,7 @@ package edu.cmu.lti.f12.hw2.hw2_team17.passage;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -121,8 +122,11 @@ public class ZhenxiangPassageExtractor extends SimplePassageExtractor {
         finalWeight.add(weight.get(i));
       }
     }
-    for (int i=0; i<finalIdfs.size(); i++)
+
+    for (int i=0; i<finalIdfs.size(); i++){
       finalIdfs.set(i, Math.log(documents.size()/finalIdfs.get(i)));
+      finalWeight.set(i, finalWeight.get(i)*finalIdfs.get(i));
+    }
     
     System.out.println("expanded keyterms "+finalKeys.toString());
       
@@ -144,17 +148,19 @@ public class ZhenxiangPassageExtractor extends SimplePassageExtractor {
         
         /*int start = 0;
         int end = 0;
+        deleteTags deTags = new deleteTags();
         
         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!");
         while (start != -1 && end != -1){
           end = text.indexOf(".",start);
           if (end != -1){
+            start = deTags.pos(start, text.substring(0,end));
             System.out.println("====================");
             String sen = text.substring(start, end);
             System.out.println(sen);
             System.out.println("====================");
           }
-          start = end + 2;
+          start = end + 1;
         }
         System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!");*/
         
@@ -211,11 +217,11 @@ public class ZhenxiangPassageExtractor extends SimplePassageExtractor {
         System.out.println("???????????????????????");*/
         //System.out.println(text);
 
-        /*ZhenxiangPassageCandidateFinder finder = new ZhenxiangPassageCandidateFinder(id, text,
-                new KeytermWindowScorerSum());*/
- 
-        ZhenxiangSentenceFinder finder = new ZhenxiangSentenceFinder(id, text,
+        ZhenxiangPassageCandidateFinder finder = new ZhenxiangPassageCandidateFinder(id, text,
                 new KeytermWindowScorerSum());
+ 
+        /*ZhenxiangSentenceFinder finder = new ZhenxiangSentenceFinder(id, text,
+                new KeytermWindowScorerSum());*/
         
         /*List<PassageCandidate> passageSpans = finder.extractPassages(keytermStrings
                 .toArray(new String[0]));*/

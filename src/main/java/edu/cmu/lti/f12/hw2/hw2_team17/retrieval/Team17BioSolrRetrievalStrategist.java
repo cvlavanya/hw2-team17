@@ -30,16 +30,6 @@ import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 
 public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategist {
-  /**
-   * Name of configuration parameter that must be set to the path of the model file.
-   */
-  public static final String PARAM_MODELFILE = "ModelFile";
-
-  /**
-   * Name of configuration parameter that must be set to the path of the dict file.
-   */
-  public static final String PARAM_DICTPATH = "WordNetDict";
-
   protected Integer hitListSize;
 
   protected SolrWrapper wrapper;
@@ -67,13 +57,15 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
       throw new ResourceInitializationException(e);
     }
 
-    System.setProperty("wordnet.database.dir",
-            (String) aContext.getConfigParameterValue(PARAM_DICTPATH));
+    URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
+    System.setProperty("wordnet.database.dir", dictPath.getPath());
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {
-      String modelPath = (String) aContext.getConfigParameterValue(PARAM_MODELFILE);
-      chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
+      URL modelPath = this.getClass().getClassLoader()
+              .getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
+      chunker = (ConfidenceChunker) AbstractExternalizable
+              .readObject(new File(modelPath.getPath()));
     } catch (IOException e) {
       throw new ResourceInitializationException();
     } catch (ClassNotFoundException e) {

@@ -1,0 +1,12 @@
+class: edu.cmu.lti.f12.hw2.hw2_team17.passage.LavanyaPassageExtractor
+#embedded: true
+#core: data/guten
+keytermWindowScorers: [edu.cmu.lti.oaqa.openqa.hello.passage.KeytermMatchesScore, edu.cmu.lti.oaqa.openqa.hello.passage.PercentMatchesScore, edu.cmu.lti.oaqa.openqa.hello.passage.PassageBrevityScore, edu.cmu.lti.oaqa.openqa.hello.passage.PassageOffsetScore]
+keytermScorerLambdas: [.45d, .15d, .25d, .15d]
+overlapThreshold: .33d
+keytermMatchLimit: 5
+passageSizeLimit: 512
+maxPassages: 10
+
+persistence-provider: |
+  inherit: ecd.default-log-persistence-provider

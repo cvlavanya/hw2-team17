@@ -1,7 +1,9 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.retrieval;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -89,27 +91,47 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
   };
 
   private List<String> formulateQuery(List<Keyterm> expandKeyTerms) {
+   
     List<String> strList = new ArrayList<String>();
+    List<String> strList1 = new ArrayList<String>();
     StringBuilder sb = new StringBuilder();
+    StringBuilder sb1 = new StringBuilder();
+
+
     for (Keyterm k : expandKeyTerms) {
-      sb.append("\"" + k + "\" ");
+      sb.append("\"" + k + "\" ");  
+      sb1.append(k + ",");  
+
     }
     sb.deleteCharAt(sb.length() - 1);
+   
     System.out.println(" QUERY: " + sb.toString());
     strList.add(sb.toString());
+    strList1.add(sb1.toString());
 
+    
+    try
+    {
+    	FileWriter queryFile = new FileWriter("src/main/resources/queryFile.txt");
+        BufferedWriter bw = new BufferedWriter(queryFile);
+        
     for (Keyterm k : expandKeyTerms)
       for (String e : k.getText().split(" "))
-        for (Synset synset : wordnetDB.getSynsets(e))
+        for (Synset synset : wordnetDB.getSynsets(e)) {
           for (String wordForm : synset.getWordForms()) {
             if (!e.toLowerCase().equals(wordForm.toLowerCase())) {
               String newQuery = sb.toString().replace(e, wordForm);
+              String newQuery1 = sb1.toString().replace(e, wordForm);
+
               if (!strList.contains(newQuery)) {
                 strList.add(newQuery);
+           	    bw.write(newQuery1);
+          	    bw.write("\n");
                 System.out.println(" QUERY: " + newQuery);
               }
             }
           }
+        }
 
     System.out.println("=================");
 
@@ -121,14 +143,26 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
             if (!e.toLowerCase().equals(newE.toLowerCase()))
               for (int i = 0; i < size; i++) {
                 String newQuery = strList.get(i).toString().replace(e, newE);
+                String newQuery1 = strList1.get(i).toString().replace(e, newE);
+
                 if (!strList.contains(newQuery)) {
-                  strList.add(newQuery);
+                	strList.add(newQuery);
+               	    bw.write(newQuery1);
+              	    bw.write("\n");
                   System.out.println(" QUERY: " + newQuery);
                 }
               }
           }
         }
+   
+    bw.close();
+    }
+    catch(Exception e)
+    {
+    	System.out.println("queryFile open error!");
+    }
     return strList;
+
   }
 
   // protected List<Keyterm> expandKeyTerms(List<Keyterm> keyterms) {
@@ -202,7 +236,28 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
   private List<RetrievalResult> retrieveDocuments(List<String> queries) {
     List<RetrievalResult> result = new ArrayList<RetrievalResult>();
     try {
-      for (String query : queries) {
+    	
+    	
+        
+      StringBuilder sb = new StringBuilder("(\"" + queries.get(0));
+      System.out.println("Writing to file-"+queries.get(0));
+ 
+      List<String> combinedQueries = new ArrayList<String>();
+      for (int i = 1; i < queries.size(); i++) {
+        sb.append("\" OR \"" + queries.get(i));
+        if (sb.length() > 4096) {
+          sb.append("\")");
+          combinedQueries.add(sb.toString());
+          sb = new StringBuilder("(\"" + queries.get(i));
+        }
+      }
+      sb.append("\")");
+      combinedQueries.add(sb.toString());
+      System.out.println(combinedQueries.size() + " queries");
+      
+      for (String query : combinedQueries) {
+    	 
+         
         SolrDocumentList docs = wrapper.runQuery(query, hitListSize);
         for (SolrDocument doc : docs) {
           RetrievalResult r = new RetrievalResult((String) doc.getFieldValue("id"),

@@ -33,7 +33,7 @@ import edu.cmu.lti.oaqa.openqa.hello.passage.SimplePassageExtractor;
 import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 
-public class ZhenxiangPassageExtractor extends SimplePassageExtractor {
+public class Team17PassageExtractor extends SimplePassageExtractor {
   protected WordNetDatabase wordnetDB;
 
   protected ConfidenceChunker chunker;

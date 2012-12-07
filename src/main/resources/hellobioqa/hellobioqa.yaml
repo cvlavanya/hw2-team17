@@ -31,7 +31,7 @@ pipeline:
     name: passage-extractor
     options: |
       #- inherit: hellobioqa.passage.simple
-      - inherit: hellobioqa.team17.passage.zhenxiang-passage-extract
+      - inherit: hellobioqa.team17.passage.team17-passage-extract
       #- inherit: hellobioqa.team17.passage.lavanya-passage-extractor
       
   - inherit: helloqa.eval.keyterm-aggregator-consumer

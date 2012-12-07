@@ -40,10 +40,10 @@ public class Team17PassageExtractor extends SimplePassageExtractor {
   
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
     super.initialize(aContext);
-    System.setProperty("wordnet.database.dir", "src/main/resources/wordnet/");
+    System.setProperty("wordnet.database.dir", "wordnet/");
     wordnetDB = WordNetDatabase.getFileInstance();
     
-    String modelPath = "src/main/resources/lingpipeModel/ne-en-bio-genetag.HmmChunker";
+    String modelPath = "lingpipeModel/ne-en-bio-genetag.HmmChunker";
     try {
       chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
     } catch (IOException e1) {

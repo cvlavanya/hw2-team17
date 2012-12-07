@@ -40,20 +40,21 @@ public class Team17PassageExtractor extends SimplePassageExtractor {
   
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
     super.initialize(aContext);
-    System.setProperty("wordnet.database.dir", "wordnet/");
+    URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
+    System.setProperty("wordnet.database.dir", dictPath.getPath());
     wordnetDB = WordNetDatabase.getFileInstance();
     
-    String modelPath = "lingpipeModel/ne-en-bio-genetag.HmmChunker";
     try {
-      chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath));
-    } catch (IOException e1) {
-      // TODO Auto-generated catch block
-      e1.printStackTrace();
-    } catch (ClassNotFoundException e1) {
-      // TODO Auto-generated catch block
-      e1.printStackTrace();
+        URL modelPath = this.getClass().getClassLoader()
+                .getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
+        chunker = (ConfidenceChunker) AbstractExternalizable
+                .readObject(new File(modelPath.getPath()));
+      } catch (IOException e) {
+        throw new ResourceInitializationException();
+      } catch (ClassNotFoundException e) {
+        throw new ResourceInitializationException();
+      }
     }
-  }
 
   @Override
   protected List<PassageCandidate> extractPassages(String question, List<Keyterm> keyterms,

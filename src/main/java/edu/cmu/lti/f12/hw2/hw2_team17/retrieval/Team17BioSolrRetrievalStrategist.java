@@ -80,6 +80,12 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
     return retrieveDocuments(queries);
   };
 
+  /**
+   * To formulate the Query that will be sent to the solr server
+   * 
+   * @param expandKeyTerms
+   * @return strList
+   */
   private List<String> formulateQuery(List<Keyterm> expandKeyTerms) {
     List<String> strList = new ArrayList<String>();
     StringBuilder sb = new StringBuilder();
@@ -124,30 +130,18 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
     return strList;
   }
 
-  // protected List<Keyterm> expandKeyTerms(List<Keyterm> keyterms) {
-  // int size = keyterms.size();
-  // for (int i = 0; i < size; i++) {
-  // for (String e : geneSynonymGenerator(keyterms.get(i).getText())) {
-  // if (!listContains(keyterms, e))
-  // keyterms.add(new Keyterm(e));
-  // }
-  // }
-  // return keyterms;
-  // }
-
-  // private boolean listContains(List<Keyterm> strList, String target) {
-  // for (Keyterm v : strList)
-  // if (v.getText().toLowerCase().equals(target.toLowerCase()))
-  // return true;
-  // return false;
-  // }
-
   private boolean isGene(String e) {
     char[] cs = e.toCharArray();
     Iterator<Chunk> iter = chunker.nBestChunks(cs, 0, cs.length, 1);
     return Math.pow(2.0, iter.next().score()) > 0.62;
   }
 
+  /**
+   * Contacts a web service to retrieve the gene synonym
+   * 
+   * @param text
+   * @return results
+   */
   private List<String> geneSynonymGenerator(String text) {
     List<String> results = new ArrayList<String>();
     try {

@@ -33,6 +33,12 @@ public class Team17KeytermExtractor extends AbstractKeytermExtractor {
     addToBlackList();
   }
 
+  /**
+   * To perform keyterm extraction by analysing the PartOfSpeechAnnotation
+   * 
+   * @param input
+   *          the String sentence
+   */
   @Override
   protected List<Keyterm> getKeyterms(String input) {
     List<Keyterm> result = new ArrayList<Keyterm>();

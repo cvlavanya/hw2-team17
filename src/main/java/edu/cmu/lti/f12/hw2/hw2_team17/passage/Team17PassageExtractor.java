@@ -55,7 +55,15 @@ public class Team17PassageExtractor extends SimplePassageExtractor {
         throw new ResourceInitializationException();
       }
     }
-
+  /**
+   * To perform query expansion and extract passage based on expanded query.
+   * <p>
+   * This method expands the queries, by using gene and word synonyms and word forms.
+   * It separates the sentences in the passage by means of punctuations.
+   * @param question the question text
+   * @param keyterms the list of extracted keyterms
+   * @param documents the list of documents retrieved in the document retrieval phase
+   */
   @Override
   protected List<PassageCandidate> extractPassages(String question, List<Keyterm> keyterms,
           List<RetrievalResult> documents) {

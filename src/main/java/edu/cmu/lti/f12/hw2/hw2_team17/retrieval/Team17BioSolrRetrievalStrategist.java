@@ -57,15 +57,16 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
       throw new ResourceInitializationException(e);
     }
 
-    URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
-    System.setProperty("wordnet.database.dir", dictPath.getPath());
+    //URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
+    //System.setProperty("wordnet.database.dir", dictPath.getPath());
+    System.setProperty("wordnet.database.dir", "wordnet/");
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {
-      URL modelPath = this.getClass().getClassLoader()
-              .getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
-      chunker = (ConfidenceChunker) AbstractExternalizable
-              .readObject(new File(modelPath.getPath()));
+      //URL modelPath = this.getClass().getClassLoader().getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
+      //chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath.getPath()));
+     chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File("lingpipeModel/ne-en-bio-genetag.HmmChunker"));
+
     } catch (IOException e) {
       throw new ResourceInitializationException();
     } catch (ClassNotFoundException e) {

@@ -1,9 +1,9 @@
 package edu.cmu.lti.f12.hw2.hw2_team17.passage;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,7 +18,6 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 import com.aliasi.chunk.Chunk;
 import com.aliasi.chunk.ConfidenceChunker;
-import com.aliasi.util.AbstractExternalizable;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
@@ -37,17 +36,17 @@ public class Team17PassageExtractor extends SimplePassageExtractor {
 
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
     super.initialize(aContext);
-    //URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
-    //System.setProperty("wordnet.database.dir", dictPath.getPath());
-    System.setProperty("wordnet.database.dir", "wordnet/");
+    URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
+    System.setProperty("wordnet.database.dir", dictPath.getPath());
+    // System.setProperty("wordnet.databas  e.dir", "wordnet/");
 
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {
-      //URL modelPath = this.getClass().getClassLoader().getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
-      //chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File(modelPath.getPath()));
-        chunker = (ConfidenceChunker) AbstractExternalizable.readObject(new File("lingpipeModel/ne-en-bio-genetag.HmmChunker"));
-
+      URL modelPath = this.getClass().getClassLoader()
+              .getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
+      ObjectInputStream ois = new ObjectInputStream(modelPath.openStream());
+      chunker = (ConfidenceChunker) ois.readObject();
     } catch (IOException e) {
       throw new ResourceInitializationException();
     } catch (ClassNotFoundException e) {

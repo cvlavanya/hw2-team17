@@ -56,9 +56,6 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
       throw new ResourceInitializationException(e);
     }
 
-    URL dictPath = this.getClass().getClassLoader().getResource("wordnet/");
-    System.setProperty("wordnet.database.dir", dictPath.getPath());
-    // System.setProperty("wordnet.database.dir", "wordnet/");
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {

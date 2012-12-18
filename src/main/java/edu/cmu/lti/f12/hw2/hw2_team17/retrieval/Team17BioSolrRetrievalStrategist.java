@@ -56,12 +56,10 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
       throw new ResourceInitializationException(e);
     }
 
-    System.out.println("===============================");
-    System.out.println(System.getProperty("wordnet.database.dir"));
-    System.out.println("===============================");
-    wordnetDB = WordNetDatabase.getFileInstance();
-
     try {
+      System.setProperty("wordnet.database.dir", "/usr0/ziy/hw2-eval/wordnet/");
+      wordnetDB = WordNetDatabase.getFileInstance();
+
       URL modelPath = this.getClass().getClassLoader()
               .getResource("lingpipeModel/ne-en-bio-genetag.HmmChunker");
       ObjectInputStream ois = new ObjectInputStream(modelPath.openStream());

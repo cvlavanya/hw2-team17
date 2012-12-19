@@ -36,7 +36,7 @@ public class Team17PassageExtractor extends SimplePassageExtractor {
 
   public void initialize(UimaContext aContext) throws ResourceInitializationException {
     super.initialize(aContext);
-    System.setProperty("wordnet.database.dir", "/usr0/ziy/hw2-eval/wordnet/");
+    System.setProperty("wordnet.database.dir", "/usr4/ziy/tmp/hw2-eval/wordnet-dict/");
     wordnetDB = WordNetDatabase.getFileInstance();
 
     try {

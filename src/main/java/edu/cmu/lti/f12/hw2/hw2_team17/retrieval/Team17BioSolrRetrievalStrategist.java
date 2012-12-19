@@ -57,7 +57,7 @@ public class Team17BioSolrRetrievalStrategist extends AbstractRetrievalStrategis
     }
 
     try {
-      System.setProperty("wordnet.database.dir", "/usr0/ziy/hw2-eval/wordnet/");
+      System.setProperty("wordnet.database.dir", "/usr4/ziy/tmp/hw2-eval/wordnet-dict/");
       wordnetDB = WordNetDatabase.getFileInstance();
 
       URL modelPath = this.getClass().getClassLoader()
